@@ -1,4 +1,4 @@
-import pygame, classes, random
+import pygame, classes, random, numpy as np
 
 pygame.init()
 pygame.font.init()
@@ -18,9 +18,8 @@ clock = pygame.time.Clock()
 
 games_played = 1
 
-
 class Flappy_Bird:
-    def __init__(self):
+    def __init__(self):     
         self.init_bird_x = 100
         self.init_bird_y = SCREEN_HEIGHT / 2 - 25
 
@@ -110,6 +109,28 @@ class Flappy_Bird:
         text_surface = self.font.render(str(self.score), True, BLACK)
         screen.blit(text_surface, self.text_position)
 
+    def get_state(self):
+        # Example state: [bird_y, bird_velocity, pipe_x, pipe_y, ...]
+        bird_y = self.bird.y
+        bird_velocity = self.bird.velocity
+        pipe_x = self.pipe_arr[0][0].x
+        pipe_y = self.pipe_arr[0][0].height  # or .y depending on your Pipe class
+
+        # Distance to next pipe, gap, etc.
+        next_pipe_bottom_y = self.pipe_arr[0][1].y
+
+        state = [
+            bird_y,
+            bird_velocity,
+            pipe_x - self.bird.x,  # horizontal distance to next pipe
+            pipe_y,                # top pipe height
+            next_pipe_bottom_y     # bottom pipe y
+        ]
+
+        return np.array(state, dtype=float)
+
+
+    
     def reset_game(self):
         global games_played
         games_played += 1
@@ -138,11 +159,15 @@ class Flappy_Bird:
 
         self.last_pipe_x = self.pipe_arr[0][0].x
 
-    def game_loop(self):
-        while self.run:
+    def play_step(self, action):
+            reward = 0
+            done = False
+
+            if action[1] == 1:
+                self.bird.velocity = JUMP_STRENGTH
+            
             screen.fill(WHITE)
             
-            self.event_handler()
             self.generate_pipes()
             self.update_bird()
             self.delete_pipes()
@@ -154,23 +179,28 @@ class Flappy_Bird:
                     pipe.x -= PIPE_SPEED
 
                     if pipe.collision(self.bird):
+                        reward = -10
+                        done = True
                         self.reset_game()
+                        return reward, done, self.score
 
-            if self.bird.y - self.bird.width > SCREEN_HEIGHT:
+            reward = 0
+            if self.bird.y - self.bird.width > SCREEN_HEIGHT or self.bird.y + self.bird.width < 0:
+                reward = -10
+                done = True
                 self.reset_game()
+                return reward, done, self.score
 
             first_pipe = self.pipe_arr[0][0]
-
             if first_pipe.x < 0 and first_pipe.x > -4:
                 self.score += 1
+                reward = 10
 
-            pygame.display.flip()
-            clock.tick(60)
+            reward += 0.1
 
+            return reward, done, self.score
 
-flappy_bird = Flappy_Bird()
-flappy_bird.game_loop()
-
-print(games_played)
+pygame.display.flip()
+clock.tick(60)
 
 pygame.quit()
