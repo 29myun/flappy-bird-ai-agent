@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+import numpy as np
+>>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
 import torch
 import random
 from collections import deque
@@ -12,12 +16,19 @@ LR = 0.001
 class Agent:
     def __init__(self):
         self.n_games = 0
+<<<<<<< HEAD
         self.epsilon = 80  # start with high exploration
         self.epsilon_min = 5  # minimum exploration
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
         self.model = Linear_QNet(5, 256, 2)
         self.model.load()
+=======
+        self.epsilon = 0 # randomness
+        self.gamma = 0.9 # discount rate
+        self.memory = deque(maxlen=MAX_MEMORY) # popleft()
+        self.model = Linear_QNet(5, 256, 2)
+>>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -28,20 +39,33 @@ class Agent:
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
+<<<<<<< HEAD
             mini_sample = random.sample(self.memory, BATCH_SIZE)
         else:
             mini_sample = list(self.memory)
 
         states, actions, rewards, next_states, dones = zip(*mini_sample)
         # Convert to tensors for batch processing
+=======
+            mini_sample = random.sample(self.memory, BATCH_SIZE) # returns a list of tuples
+        else:
+            mini_sample = self.memory
+
+        states, actions, rewards, next_states, dones = zip(*mini_sample)
+>>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
 
     def get_action(self, state):
+<<<<<<< HEAD
         # Decay epsilon but keep above minimum
         self.epsilon = max(self.epsilon_min, 80 - self.n_games)
+=======
+        # random moves: tradeoff (exploration -> when ai is inexperienced / exploitation -> as ai gets more advanced)
+        self.epsilon = 80 - self.n_games
+>>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
         if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 1)
         else:
@@ -59,7 +83,11 @@ def train():
     game = Flappy_Bird()
     
     while True:
+<<<<<<< HEAD
         if agent.n_games == 50000:
+=======
+        if agent.n_games == 1000:
+>>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
             break
 
         # get old state
