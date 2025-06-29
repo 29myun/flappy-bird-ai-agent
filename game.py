@@ -30,15 +30,9 @@ class Flappy_Bird:
 
         self.score = 0
 
-<<<<<<< HEAD
         self.font_size = 100
         self.text_position = (SCREEN_WIDTH / 2 - 10, self.font_size)
         self.font = pygame.font.Font(None, self.font_size)
-=======
-        # self.font_size = 100
-        # self.text_position = (SCREEN_WIDTH / 2 - 10, self.font_size)
-        # self.font = pygame.font.Font(None, self.font_size)
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
 
         top_pipe_height, bottom_pipe_height = self.randomize_pipe_height()
 
@@ -79,11 +73,7 @@ class Flappy_Bird:
                     self.bird.velocity = JUMP_STRENGTH
 
     def generate_pipes(self):
-<<<<<<< HEAD
         if len(self.pipe_arr) < 3:
-=======
-        if len(self.pipe_arr) < 4:
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
             top_pipe_height, bottom_pipe_height = self.randomize_pipe_height()
 
             gap_between_pipes = 400
@@ -105,28 +95,19 @@ class Flappy_Bird:
                 ]
             )
 
-<<<<<<< HEAD
-=======
     def delete_pipes(self):
         first_pipe = self.pipe_arr[0][0]
 
         if first_pipe.x < -first_pipe.width:
             self.pipe_arr.pop(0)
 
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
     def update_bird(self):
         self.bird.velocity += GRAVITY
         self.bird.y += self.bird.velocity
 
-<<<<<<< HEAD
     def display_score(self):
         text_surface = self.font.render(str(self.score), True, BLACK)
         screen.blit(text_surface, self.text_position)
-=======
-    # def display_score(self):
-    #     text_surface = self.font.render(str(self.score), True, BLACK)
-    #     screen.blit(text_surface, self.text_position)
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
 
     def get_state(self):
         # Example state: [bird_y, bird_velocity, pipe_x, pipe_y, ...]
@@ -187,24 +168,15 @@ class Flappy_Bird:
 
         self.generate_pipes()
         self.update_bird()
-<<<<<<< HEAD
         self.display_score()
         self.event_handler()
 
-
-=======
-        self.delete_pipes()
-        # self.display_score()
-        self.event_handler()
-
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
         for i in self.pipe_arr:
             for pipe in i:
                 pipe.draw(screen)
                 pipe.x -= PIPE_SPEED
 
                 if pipe.collision(self.bird):
-<<<<<<< HEAD
                     reward = -1
                     done = True
                     final_score = self.score
@@ -232,53 +204,22 @@ class Flappy_Bird:
             reward += 0.01
         else:
             reward -= 0.01
-=======
-                    reward = -10
-                    done = True
-                    self.reset_game()
-                    return reward, done, self.score
-
-        if (
-            self.bird.y - self.bird.width > SCREEN_HEIGHT
-            or self.bird.y + self.bird.width < 0
-        ):
-            reward = -10
-            done = True
-            self.reset_game()
-            return reward, done, self.score
-
-        first_pipe = self.pipe_arr[0][0]
-        if first_pipe.x < 0 and first_pipe.x > -4:
-            self.score += 1
-            reward = 10
-
-        reward += 0.1
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
 
         self.bird.draw(screen)
         pygame.display.flip()
         clock.tick(60)
 
-<<<<<<< HEAD
-        # reward -= 0.001 DO THIS at 3rd training session
-
-=======
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
         return reward, self.done, self.score
 
 game = Flappy_Bird()
 def game_loop() -> None:
     while True:
-<<<<<<< HEAD
         done = game.play_step(0)[1]
-=======
-        done = game.play_step(0)
->>>>>>> 4f851fdecdbd841d6f1dc5005a62e8ac3d7bd569
         
         if done:
             break
 
 if __name__ == "__main__":
-    # game_loop()
+    game_loop()
     pygame.quit()
 
