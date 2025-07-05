@@ -1,17 +1,21 @@
 model_type = input("Enter in the model type: ")
-train = str.lower(input("Trained or Untrained: "))
+train = str.lower(input("Is this model trained or untrained?: "))
 
 import numpy as np
 import torch
 import random
-import data
+import pygame
 from collections import deque
 from game import Flappy_Bird
 from model import Linear_QNet, QTrainer 
+import data
+
+pygame.display.set_caption(f"Flappy Bird AI Training Model: {model_type}")
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 128
 LR = 0.001
+MAX_GAMES = 5000
 
 class Agent:
     def __init__(self, model_type):
@@ -29,8 +33,8 @@ class Agent:
         except ValueError:
             raise ValueError(f"Invalid model_type format: '{model_type}'. Expected format: '5_128_2'")
         
-        if input_size < 5 or 512 < hidden_size < 64 or output_size < 2:
-            ValueError("Invalid layer sizes.")
+        if 5 > input_size or 64 > hidden_size > 512 or not output_size  == 2:
+            raise ValueError("Invalid layer sizes.")
         
         self.model = Linear_QNet(input_size, hidden_size, output_size)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
@@ -66,14 +70,15 @@ class Agent:
             move = torch.argmax(prediction).item()
         return move 
 
-def untrained():
+def untrained(agent, game):
     agent.model.load_untrained(model_type)
 
     record = 0
+
     agent.keep_exploring = True
     
     while True:
-        if agent.n_games == 5000:
+        if agent.n_games == MAX_GAMES:
             break
 
         # get old state
@@ -99,12 +104,12 @@ def untrained():
 
             if score > record:
                 record = score
-                agent.model.save_untrained()
-                data.save("untrained", record, agent.n_games)
+                agent.model.save_untrained(model_type)
+                data.save(model_type, record, agent.n_games, "./untrained_models_data")
 
             print(f"Games Played: {agent.n_games}\nScore: {score}\nRecord: {record}")
 
-def trained():    
+def trained(agent, game):    
     agent.model.load_trained(model_type)
         
     record = data.load(model_type)["record"]
@@ -113,7 +118,7 @@ def trained():
     agent.keep_exploring = False
     
     while True:
-        if agent.n_games == 1000:
+        if agent.n_games == MAX_GAMES:
             break
 
         # get old state
@@ -141,7 +146,7 @@ def trained():
             if score > record:
                 record = score
                 agent.model.save_trained(model_type)
-                data.save(model_type, record, total_games_played)
+                data.save(model_type, record, total_games_played, "./saved_models_data")
 
             print(f"Games Played: {agent.n_games}\nTotal Games Played: {total_games_played}\nScore: {score}\nRecord: {record}")
 
@@ -150,10 +155,10 @@ if __name__ == '__main__':
     game = Flappy_Bird()
 
     if train == "untrained":
-        untrained()
+        untrained(agent, game)
     elif train == "trained":
-        trained()
+        trained(agent, game)
     else:
-        RuntimeError("Invalid training option")
+        raise RuntimeError("Invalid training option")
 
     print(f"Finished {train} session with model: {model_type}")

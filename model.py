@@ -19,8 +19,9 @@ class Linear_QNet(nn.Module):
 
         return x
     
-    def save_untrained(self, file_name="untrained_model.pth"):
-        model_folder_path = './model'
+    def save_untrained(self, model_type):
+        file_name = model_type + "_model.pth"
+        model_folder_path = './untrained_models'
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
         
@@ -40,7 +41,7 @@ class Linear_QNet(nn.Module):
     
     def load_untrained(self, model_type):
         file_name = model_type + "_model.pth"
-        model_folder_path = './model'
+        model_folder_path = './untrained_models'
         file_path = os.path.join(model_folder_path, file_name)
         
         if not os.path.exists(file_path):
@@ -55,7 +56,7 @@ class Linear_QNet(nn.Module):
         file_path = os.path.join(model_folder_path, file_name)
         
         if not os.path.exists(file_path):
-            RuntimeError(f"Model {model_type} not found")
+            raise RuntimeError(f"Model {model_type} not found")
         else:
             self.load_state_dict(torch.load(file_path))
             print(f"Loading trained model from: {file_path}")
@@ -85,12 +86,13 @@ class QTrainer:
 
         prediction = self.model(state)
 
-        target = prediction.clone().detach()
-        for i in range(len(done)):
-            Q_new = reward[i]
-            if not done[i]:
-                Q_new = reward[i] + self.gamma * torch.max(self.model(next_state[i]))
-            target[i][action[i].item()] = Q_new
+        target = prediction.detach().clone()
+        with torch.no_grad():
+            for i in range(len(done)):
+                Q_new = reward[i]
+                if not done[i]:
+                    Q_new = reward[i] + self.gamma * torch.max(self.model(next_state[i]))
+                target[i][action[i].item()] = Q_new
 
         self.optimizer.zero_grad()
         loss = self.criterion(prediction, target)

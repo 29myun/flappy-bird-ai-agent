@@ -14,6 +14,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Flappy Bird")
 clock = pygame.time.Clock()
 
 class Flappy_Bird:
@@ -67,8 +68,8 @@ class Flappy_Bird:
                 if event.key == pygame.K_ESCAPE:
                     self.done = True
 
-                if event.key == pygame.K_SPACE:
-                    self.bird.velocity = JUMP_STRENGTH
+                # if event.key == pygame.K_SPACE:
+                #     self.bird.velocity = JUMP_STRENGTH
 
     def generate_pipes(self):
         if len(self.pipe_arr) < 3:
@@ -108,13 +109,13 @@ class Flappy_Bird:
         screen.blit(text_surface, self.text_position)
 
     def get_state(self):
-        bird_y = self.bird.y
-        bird_velocity = self.bird.velocity
-        pipe_x = self.pipe_arr[0][0].x
-        bot_of_top_pipe = self.pipe_arr[0][0].height  # or .y depending on your Pipe class
-        top_of_bot_pipe = self.pipe_arr[0][1].y
+        bird_y = self.bird.y / SCREEN_HEIGHT
+        bird_velocity = self.bird.velocity / 20
+        horizontal_distance_to_pipe = (self.pipe_arr[0][0].x - self.bird.x) / SCREEN_WIDTH
+        distance_to_bot_of_top_pipe = (self.bird.y - self.pipe_arr[0][0].height) / SCREEN_HEIGHT 
+        distance_to_top_of_bot_pipe = ((self.bird.y + self.bird.height) - self.pipe_arr[0][1].y) / SCREEN_HEIGHT
 
-        state = [bird_y, bird_velocity, pipe_x - self.bird.x, bot_of_top_pipe, top_of_bot_pipe]
+        state = [bird_y, bird_velocity, horizontal_distance_to_pipe, distance_to_bot_of_top_pipe, distance_to_top_of_bot_pipe]
 
         return np.array(state, dtype=float)
 
@@ -160,7 +161,7 @@ class Flappy_Bird:
         if action == 1:
             self.bird.velocity = JUMP_STRENGTH
             
-        reward += 1 - (distance_y / (self.vertical_gap_between_pipes / 2))
+        reward += max(0, 1 - (distance_y / (self.vertical_gap_between_pipes / 2)))
 
         if self.bird.x > first_pipe_pair[0].x + first_pipe_pair[0].width:
             self.pipe_arr.pop(0)
@@ -169,8 +170,8 @@ class Flappy_Bird:
 
         for i in self.pipe_arr:
             for pipe in i:
-                pipe.draw(screen)
                 pipe.x -= PIPE_SPEED
+                pipe.draw(screen)
 
                 if pipe.collision(self.bird):
                     reward = -5
