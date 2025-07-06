@@ -15,7 +15,8 @@ pygame.display.set_caption(f"Flappy Bird AI Training Model: {model_type}")
 MAX_MEMORY = 100_000
 BATCH_SIZE = 128
 LR = 0.001
-MAX_GAMES = 5000
+MAX_GAMES = 1000
+MAX_SCORE = 1000
 
 class Agent:
     def __init__(self, model_type):
@@ -77,9 +78,7 @@ def untrained(agent, game):
 
     agent.keep_exploring = True
     
-    while True:
-        if agent.n_games == MAX_GAMES:
-            break
+    while agent.n_games < MAX_GAMES:
 
         # get old state
         state_old = agent.get_state(game)
@@ -96,6 +95,7 @@ def untrained(agent, game):
         agent.train_short_memory(state_old, action, reward, state_new, done)
         # remember
         agent.remember(state_old, action, reward, state_new, done)
+
         if done:
             # train long memory
             game.reset_game()
@@ -108,6 +108,10 @@ def untrained(agent, game):
                 data.save(model_type, record, agent.n_games, "./untrained_models_data")
 
             print(f"Games Played: {agent.n_games}\nScore: {score}\nRecord: {record}")
+        
+        if score > MAX_SCORE:
+            agent.model.save_untrained(model_type)
+            break
 
 def trained(agent, game):    
     agent.model.load_trained(model_type)
@@ -117,9 +121,7 @@ def trained(agent, game):
     
     agent.keep_exploring = False
     
-    while True:
-        if agent.n_games == MAX_GAMES:
-            break
+    while agent.n_games < MAX_GAMES or score > 1000:
 
         # get old state
         state_old = agent.get_state(game)
@@ -149,6 +151,8 @@ def trained(agent, game):
                 data.save(model_type, record, total_games_played, "./saved_models_data")
 
             print(f"Games Played: {agent.n_games}\nTotal Games Played: {total_games_played}\nScore: {score}\nRecord: {record}")
+
+    agent.model.save_trained(model_type)
 
 if __name__ == '__main__':
     agent = Agent(model_type)
