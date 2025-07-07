@@ -16,7 +16,6 @@ class Pipe:
         
         return bird_rect.colliderect(pipe_rect)
 
-
 class Bird:
     def __init__(self, x, y):
         self.x = float(x)
